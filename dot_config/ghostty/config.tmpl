@@ -3,7 +3,9 @@ font-family = "JetBrains Mono"
 theme = agent-afk
 window-padding-x = 10
 window-padding-y = 10
+{{ if eq .chezmoi.os "darwin" -}}
 macos-titlebar-style = tabs
+{{ end -}}
 cursor-style = block
 shell-integration = zsh
 copy-on-select = true

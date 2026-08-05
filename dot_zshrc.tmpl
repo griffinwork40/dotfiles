@@ -23,9 +23,21 @@ plugins=(git)
 [[ -r "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
 [[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
 
-# Interactive completion and suggestions.
-[[ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
-  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# Interactive completion and suggestions. Homebrew's prefix varies by CPU
+# arch even within Darwin, so probe every known prefix and use the first
+# match; break to avoid double-sourcing when more than one prefix exists.
+for _zsh_plugin_candidate in \
+  /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /home/linuxbrew/.linuxbrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+do
+  if [[ -r "$_zsh_plugin_candidate" ]]; then
+    source "$_zsh_plugin_candidate"
+    break
+  fi
+done
+unset _zsh_plugin_candidate
 
 # Node via nvm. Eager loading keeps project-specific Node selection predictable.
 export NVM_DIR="$HOME/.nvm"
@@ -33,7 +45,11 @@ export NVM_DIR="$HOME/.nvm"
 [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 
 # User and language toolchains.
+{{ if eq .chezmoi.os "darwin" -}}
 export PNPM_HOME="$HOME/Library/pnpm"
+{{ else -}}
+export PNPM_HOME="$HOME/.local/share/pnpm"
+{{ end -}}
 export BUN_INSTALL="$HOME/.bun"
 path_prepend "$HOME/.local/bin"
 path_prepend "$HOME/.antigravity/antigravity/bin"
@@ -78,5 +94,16 @@ TERMAUTO_SHELL="$HOME/Projects/open_source/termauto/shell/termauto.zsh"
 unset TERMAUTO_SHELL
 
 # zsh-syntax-highlighting must load after all widgets and integrations.
-[[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
-  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# Same multi-prefix probe as zsh-autosuggestions above.
+for _zsh_plugin_candidate in \
+  /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /home/linuxbrew/.linuxbrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+do
+  if [[ -r "$_zsh_plugin_candidate" ]]; then
+    source "$_zsh_plugin_candidate"
+    break
+  fi
+done
+unset _zsh_plugin_candidate

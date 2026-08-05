@@ -1,0 +1,9 @@
+font-size = 16
+font-family = "JetBrains Mono"
+theme = agent-afk
+window-padding-x = 10
+window-padding-y = 10
+macos-titlebar-style = tabs
+cursor-style = block
+shell-integration = zsh
+copy-on-select = true

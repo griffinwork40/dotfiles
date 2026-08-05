@@ -1,0 +1,2 @@
+# Universal zsh environment: keep this file minimal and secret-free.
+[[ -r "$HOME/.cargo/env" ]] && source "$HOME/.cargo/env"

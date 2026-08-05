@@ -1,0 +1,82 @@
+# Powerlevel10k instant prompt must stay near the top. Anything requiring input goes above it.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Deduplicate PATH while preserving the first occurrence.
+typeset -U path PATH
+
+path_prepend() {
+  [[ -d "$1" ]] || return 0
+  path=("$1" ${path:#"$1"})
+}
+
+path_append() {
+  [[ -d "$1" ]] || return 0
+  path=(${path:#"$1"} "$1")
+}
+
+# Oh My Zsh owns Powerlevel10k loading; do not source the theme a second time.
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+plugins=(git)
+[[ -r "$ZSH/oh-my-zsh.sh" ]] && source "$ZSH/oh-my-zsh.sh"
+[[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
+
+# Interactive completion and suggestions.
+[[ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Node via nvm. Eager loading keeps project-specific Node selection predictable.
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+# User and language toolchains.
+export PNPM_HOME="$HOME/Library/pnpm"
+export BUN_INSTALL="$HOME/.bun"
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/.antigravity/antigravity/bin"
+path_prepend "$PNPM_HOME"
+path_prepend "$BUN_INSTALL/bin"
+path_prepend "$HOME/free-code"
+path_append "$HOME/.lmstudio/bin"
+[[ -s "$BUN_INSTALL/_bun" ]] && source "$BUN_INSTALL/_bun"
+
+# Local Ollama-compatible clients require a non-secret placeholder value.
+export OLLAMA_API_KEY="ollama-local"
+
+# Explicit AFK development launchers keep public/private builds and state separate.
+afk_dev_run() {
+  local checkout="$1"
+  local state_home="$2"
+  shift 2
+  local cli="$checkout/dist/cli.mjs"
+  if [[ ! -f "$cli" ]]; then
+    print -u2 "AFK dev build not found: $cli (run pnpm build in the checkout)"
+    return 1
+  fi
+  AFK_HOME="${AFK_HOME:-$state_home}" node "$cli" "$@"
+}
+
+afk-dev-public() {
+  afk_dev_run "$HOME/Projects/open_source/agent-afk" "$HOME/.afk-dev-public" "$@"
+}
+
+afk-dev-private() {
+  afk_dev_run "$HOME/Projects/personal_projects/agent-workspace/agent-afk-private" "$HOME/.afk-dev-private" "$@"
+}
+
+# Backward-compatible default: public core is canonical.
+afk-dev() {
+  afk-dev-public "$@"
+}
+
+# Termauto is optional; moving the checkout must not break every new shell.
+TERMAUTO_SHELL="$HOME/Projects/open_source/termauto/shell/termauto.zsh"
+[[ -r "$TERMAUTO_SHELL" ]] && source "$TERMAUTO_SHELL"
+unset TERMAUTO_SHELL
+
+# zsh-syntax-highlighting must load after all widgets and integrations.
+[[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

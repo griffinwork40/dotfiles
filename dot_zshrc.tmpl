@@ -62,6 +62,32 @@ path_append "$HOME/.lmstudio/bin"
 # Local Ollama-compatible clients require a non-secret placeholder value.
 export OLLAMA_API_KEY="ollama-local"
 
+# Auto-cd into a worktree AFK preserved on exit. A child process cannot change
+# its parent shell's cwd (POSIX), so afk records the destination in
+# $AFK_HOME/state/last-cwd and the shell side performs the cd after the binary
+# returns. Shared by the `afk` wrapper below AND the dev launchers, which run
+# node against a dist build directly and would otherwise never auto-cd.
+#
+# Ordering is load-bearing: cd BEFORE rm. A failed cd must leave the marker in
+# place and warn, not silently discard the only record of where to go.
+_afk_cd_from_marker() {
+  local marker="$1"
+  # -f follows symlinks; the extra ! -L rejects a symlink AT the marker path
+  # (defense-in-depth — anyone who can write there has bigger leverage).
+  [ -f "$marker" ] && [ ! -L "$marker" ] || return 0
+  local target
+  target=$(cat "$marker" 2>/dev/null)
+  if [ -z "$target" ] || [ ! -d "$target" ]; then
+    rm -f "$marker"
+    return 0
+  fi
+  if cd "$target"; then
+    rm -f "$marker"
+  else
+    echo "afk: warning: could not cd to $target" >&2
+  fi
+}
+
 # Explicit AFK development launchers keep public/private builds and state separate.
 afk_dev_run() {
   local checkout="$1"
@@ -72,7 +98,15 @@ afk_dev_run() {
     print -u2 "AFK dev build not found: $cli (run pnpm build in the checkout)"
     return 1
   fi
-  AFK_HOME="${AFK_HOME:-$state_home}" node "$cli" "$@"
+  # AFK_HOME is resolved into a local first: the marker lands under whichever
+  # home the child actually used, and the post-exit read must look in that same
+  # place. AFK_SHELL_WRAPPER tells the child the cd is handled, suppressing the
+  # "install one-time" hint it prints when no wrapper is present.
+  local afk_home="${AFK_HOME:-$state_home}"
+  AFK_HOME="$afk_home" AFK_SHELL_WRAPPER=1 node "$cli" "$@"
+  local rc=$?
+  _afk_cd_from_marker "$afk_home/state/last-cwd"
+  return $rc
 }
 
 afk-dev-public() {
@@ -88,33 +122,16 @@ afk-dev() {
   afk-dev-public "$@"
 }
 
-# Auto-cd into a worktree AFK preserved on exit. A child process cannot change
-# its parent shell's cwd, so afk writes the path to ${AFK_HOME:-$HOME/.afk}/state/last-cwd
-# and this wrapper does the cd after the binary returns. Pasted verbatim rather
-# than `eval "$(afk shell-init)"` because that spawns node on every new shell
-# (measured 0.37-0.53s); regenerate with `afk shell-init` if the marker
-# protocol ever changes. NOTE: afk-dev* above call `node "$cli"` directly, so
-# they bypass this wrapper and will not auto-cd.
+# Installed by hand rather than via `eval "$(afk shell-init)"`: that form spawns
+# node on every new shell (measured 0.37-0.53s here). The marker-reading body is
+# factored onto _afk_cd_from_marker above so the dev launchers share it, so this
+# is NOT byte-identical to the generator's output — diff against `afk shell-init`
+# rather than assuming, if the marker protocol ever changes.
 # >>> afk shell-init >>>
 afk() {
   AFK_SHELL_WRAPPER=1 command afk "$@"
   local _afk_rc=$?
-  local _afk_marker=${AFK_HOME:-$HOME/.afk}/state/last-cwd
-  # -f follows symlinks; the additional ! -L check rejects a symlink
-  # at the marker path (defense-in-depth).
-  if [ -f "$_afk_marker" ] && [ ! -L "$_afk_marker" ]; then
-    local _afk_target
-    _afk_target=$(cat "$_afk_marker" 2>/dev/null)
-    if [ -n "$_afk_target" ] && [ -d "$_afk_target" ]; then
-      if cd "$_afk_target"; then
-        rm -f "$_afk_marker"
-      else
-        echo "afk: warning: could not cd to $_afk_target" >&2
-      fi
-    else
-      rm -f "$_afk_marker"
-    fi
-  fi
+  _afk_cd_from_marker "${AFK_HOME:-$HOME/.afk}/state/last-cwd"
   return $_afk_rc
 }
 # <<< afk shell-init <<<

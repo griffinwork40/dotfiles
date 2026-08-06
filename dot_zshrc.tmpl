@@ -88,6 +88,37 @@ afk-dev() {
   afk-dev-public "$@"
 }
 
+# Auto-cd into a worktree AFK preserved on exit. A child process cannot change
+# its parent shell's cwd, so afk writes the path to ${AFK_HOME:-$HOME/.afk}/state/last-cwd
+# and this wrapper does the cd after the binary returns. Pasted verbatim rather
+# than `eval "$(afk shell-init)"` because that spawns node on every new shell
+# (measured 0.37-0.53s); regenerate with `afk shell-init` if the marker
+# protocol ever changes. NOTE: afk-dev* above call `node "$cli"` directly, so
+# they bypass this wrapper and will not auto-cd.
+# >>> afk shell-init >>>
+afk() {
+  AFK_SHELL_WRAPPER=1 command afk "$@"
+  local _afk_rc=$?
+  local _afk_marker=${AFK_HOME:-$HOME/.afk}/state/last-cwd
+  # -f follows symlinks; the additional ! -L check rejects a symlink
+  # at the marker path (defense-in-depth).
+  if [ -f "$_afk_marker" ] && [ ! -L "$_afk_marker" ]; then
+    local _afk_target
+    _afk_target=$(cat "$_afk_marker" 2>/dev/null)
+    if [ -n "$_afk_target" ] && [ -d "$_afk_target" ]; then
+      if cd "$_afk_target"; then
+        rm -f "$_afk_marker"
+      else
+        echo "afk: warning: could not cd to $_afk_target" >&2
+      fi
+    else
+      rm -f "$_afk_marker"
+    fi
+  fi
+  return $_afk_rc
+}
+# <<< afk shell-init <<<
+
 # Termauto is optional; moving the checkout must not break every new shell.
 TERMAUTO_SHELL="$HOME/Projects/open_source/termauto/shell/termauto.zsh"
 [[ -r "$TERMAUTO_SHELL" ]] && source "$TERMAUTO_SHELL"

@@ -16,10 +16,11 @@ Curated macOS and Linux developer configuration managed with [chezmoi](https://w
 ### Linux
 
 1. Install zsh, chezmoi, and Gitleaks with the distribution package manager or Linuxbrew.
-2. Initialize: `chezmoi init git@github.com:griffinwork40/dotfiles.git`.
-3. Preview with `chezmoi diff`, then apply with `chezmoi apply`.
-4. Run `"$(chezmoi source-path)/executable_install.sh"` to verify required tools; it never invokes apt, dnf, pacman, or another package manager.
-5. Install Oh My Zsh, Powerlevel10k, NVM, and project checkouts as needed.
+2. Install `zsh-autosuggestions` and `zsh-syntax-highlighting` the same way. The Brewfile supplies these on macOS, but nothing installs them on Linux, and the shell config sources them by path and skips them silently when absent, so a missing package presents as a missing feature rather than an error.
+3. Initialize: `chezmoi init git@github.com:griffinwork40/dotfiles.git`.
+4. Preview with `chezmoi diff`, then apply with `chezmoi apply`.
+5. Run `"$(chezmoi source-path)/executable_install.sh"` to verify required tools and report missing optional plugins; it never invokes apt, dnf, pacman, or another package manager.
+6. Install Oh My Zsh, Powerlevel10k, NVM, and project checkouts as needed.
 
 Package installation is explicit on both systems; `chezmoi apply` never installs packages.
 

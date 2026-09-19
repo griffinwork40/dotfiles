@@ -25,6 +25,12 @@ if grep -q '^macos-titlebar-style' "$tmp/ghostty-linux"; then
   exit 1
 fi
 
+# Validate that the .chezmoiignore template renders cleanly for both profiles.
+chezmoi execute-template < "$repo/.chezmoiignore.tmpl" > /dev/null
+minimal_data='{"minimal":true}'
+chezmoi execute-template --override-data "$minimal_data" < "$repo/.chezmoiignore.tmpl" > "$tmp/ignore-minimal"
+grep -q 'dot_config/ghostty' "$tmp/ignore-minimal"
+
 gitleaks dir "$repo" --no-banner --redact --exit-code 1
 
 oversized=$(find "$repo" -type f -not -path '*/.git/*' -exec awk 'FNR == 1 { file=FILENAME } FNR > 350 { print file; nextfile }' {} +)

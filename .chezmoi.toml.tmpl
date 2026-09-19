@@ -1,0 +1,13 @@
+{{- /* Auto-detect minimal installs by hostname. Machines in this list skip
+       GUI apps (Ghostty, Warp, Docker Desktop …) and heavy brew formulas.
+       Override with: chezmoi init --data minimal=true */ -}}
+
+{{- $minimal := false -}}
+{{- if hasKey .chezmoi "hostname" -}}
+{{-   if eq .chezmoi.hostname "Griffins-Mac-mini" -}}
+{{-     $minimal = true -}}
+{{-   end -}}
+{{- end -}}
+
+[data]
+  minimal = {{ $minimal }}

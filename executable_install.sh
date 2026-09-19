@@ -20,6 +20,17 @@ zsh_plugin_present() {
   return 1
 }
 
+# Detect minimal mode from chezmoi data (set by .chezmoi.toml.tmpl).
+is_minimal() {
+  if command -v chezmoi >/dev/null 2>&1; then
+    _val=$(chezmoi data --format json 2>/dev/null \
+      | grep '"minimal"' | head -1 | grep -c 'true') || true
+    [ "$_val" = "1" ]
+  else
+    return 1
+  fi
+}
+
 case "$(uname -s)" in
   Darwin)
     if ! command -v brew >/dev/null 2>&1; then
@@ -28,6 +39,11 @@ case "$(uname -s)" in
     fi
     brew install chezmoi gitleaks
     brew bundle --file="$repo/Brewfile"
+    if is_minimal; then
+      echo "Minimal install — skipping Brewfile.extras (GUI apps, heavy tools)."
+    else
+      brew bundle --file="$repo/Brewfile.extras"
+    fi
     ;;
   Linux)
     missing=""

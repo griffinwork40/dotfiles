@@ -155,3 +155,6 @@ do
   fi
 done
 unset _zsh_plugin_candidate
+
+# Fix duplicate libomp crash with mlx-lm (brew python + torch both ship libomp)
+export KMP_DUPLICATE_LIB_OK=TRUE

@@ -1,0 +1,96 @@
+# Extra packages for full workstations. Skipped on minimal installs
+# (headless servers, Mac Mini, CI). Install via: ./executable_install.sh
+# The base Brewfile is always installed first.
+tap "warpdotdev/warp"
+# Cross-platform make
+brew "cmake"
+# Perl lib for reading and writing EXIF metadata
+brew "exiftool"
+# Play, record, convert, and stream select audio and video codecs
+brew "ffmpeg"
+# Interact with Google Gemini AI models from the command-line
+brew "gemini-cli"
+# Client library for huggingface.co hub
+brew "hf", link: false
+# Tools and libraries to manipulate images in select formats
+brew "imagemagick"
+# Command-line tool to export and inspect local iMessage database
+brew "imessage-exporter"
+# Download media from Instagram
+brew "instaloader"
+# Library to render SVG files using Cairo
+brew "librsvg"
+# LLM inference in C/C++
+brew "llama.cpp"
+# Next-gen compiler infrastructure
+brew "llvm"
+# General-purpose speech recognition model
+brew "openai-whisper", link: false
+# Port of pdftk in java
+brew "pdftk-java"
+# Cross-platform library for audio I/O
+brew "portaudio"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.11"
+# Interpreted, interactive, object-oriented programming language
+brew "python@3.12"
+# AI-powered command-line workflow tool for developers
+brew "qwen-code"
+# Port of OpenAI's Whisper model in C/C++
+brew "whisper-cpp"
+# Modern Go client + CLI for the Google Places API (New)
+brew "openclaw/tap/goplaces", link: false
+# Compact TeX distribution as alternative to the full TeX Live / MacTeX
+cask "basictex"
+# Server for forwarding iMessages
+cask "bluebubbles"
+# OpenAI's coding agent that runs in your terminal
+cask "codex"
+cask "codexbar"
+# Brings the power of Copilot coding agent directly to your terminal
+cask "copilot-cli"
+# App to build and share containerised applications and microservices
+cask "docker-desktop"
+cask "font-caskaydia-cove-nerd-font"
+cask "font-geist-mono"
+cask "font-jetbrains-mono"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-meslo-lg-nerd-font"
+cask "font-monaspace"
+# Terminal emulator that uses platform-native UI and GPU acceleration
+cask "ghostty"
+# Modern Go client + CLI for the Google Places API (New).
+cask "openclaw/tap/goplaces", trusted: true
+# Intercept, modify, replay, save HTTP/S traffic
+cask "mitmproxy"
+# Reverse proxy, secure introspectable tunnels to localhost
+cask "ngrok"
+cask "oz"
+# Rust-based terminal
+cask "warp"
+vscode "anthropic.claude-code"
+vscode "anysphere.cursorpyright"
+vscode "anysphere.remote-containers"
+vscode "anysphere.remote-ssh"
+vscode "esbenp.prettier-vscode"
+vscode "github.github-vscode-theme"
+vscode "github.vscode-github-actions"
+vscode "github.vscode-pull-request-github"
+vscode "google.gemini-cli-vscode-ide-companion"
+vscode "mechatroner.rainbow-csv"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-azuretools.vscode-docker"
+vscode "ms-python.debugpy"
+vscode "ms-python.python"
+vscode "openai.chatgpt"
+vscode "tomoki1207.pdf"
+cargo "gadscli"
+uv "harbor"
+npm "@griffinwork40/gadscli"
+npm "@mariozechner/pi-coding-agent"
+npm "@railway/cli"
+npm "cursor-api-proxy"
+npm "neonctl"
+npm "outreach-cli"
+npm "tweakcc"
+npm "ws"

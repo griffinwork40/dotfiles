@@ -29,7 +29,7 @@ fi
 chezmoi execute-template < "$repo/.chezmoiignore.tmpl" > /dev/null
 minimal_data='{"minimal":true}'
 chezmoi execute-template --override-data "$minimal_data" < "$repo/.chezmoiignore.tmpl" > "$tmp/ignore-minimal"
-grep -q 'dot_config/ghostty' "$tmp/ignore-minimal"
+grep -q '.config/ghostty' "$tmp/ignore-minimal"
 
 gitleaks dir "$repo" --no-banner --redact --exit-code 1
 

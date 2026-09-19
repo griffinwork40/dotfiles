@@ -49,7 +49,7 @@ brew "zsh-syntax-highlighting"
 # Google CLI for Gmail, Calendar, Drive, Docs, Sheets, and more
 brew "openclaw/tap/gogcli", trusted: true
 # Fast X CLI for tweeting, replying, and reading
-brew "steipete/tap/bird"
+brew "steipete/tap/birdclaw"
 npm "agent-afk"
 npm "typescript-language-server"
 npm "vercel"
